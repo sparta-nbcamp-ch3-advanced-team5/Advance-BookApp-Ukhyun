@@ -98,11 +98,37 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
             fatalError("ERROR")
         }
     }
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        if kind == UICollectionView.elementKindSectionHeader {
+            let header = collectionView.dequeueReusableSupplementaryView(
+                ofKind: kind,
+                withReuseIdentifier: MainSectionHeaderView.id,
+                for: indexPath
+            ) as! MainSectionHeaderView
+            
+            switch Section(rawValue: indexPath.section) {
+            case .recentBook:
+                header.titleLabel.text = "최근 본 책"
+            case .searchResult:
+                header.titleLabel.text = "검색 결과"
+            default:
+                header.titleLabel.text = "@@@@@@@@@@@"
+            }
+            return header
+        }
+        fatalError()
+    }
 
     private func setupCollectionView() {
         collectionView.register(RecentBooksCell.self, forCellWithReuseIdentifier: RecentBooksCell.id)
+        collectionView.register(SearchResultsCell.self, forCellWithReuseIdentifier: SearchResultsCell.id)
         collectionView
-            .register(SearchResultsCell.self, forCellWithReuseIdentifier: SearchResultsCell.id)
+            .register(
+                MainSectionHeaderView.self,
+                forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+                withReuseIdentifier: MainSectionHeaderView.id
+            )
         
         collectionView.delegate = self
         collectionView.dataSource = self
