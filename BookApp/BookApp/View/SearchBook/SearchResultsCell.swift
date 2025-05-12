@@ -62,6 +62,13 @@ final class SearchResultsCell: UICollectionViewCell {
         }
     }
     
+    func configure(with book: BookDocument) {
+        bookTitleLabel.text = book.title
+        authorLabel.text = book.authors.joined(separator: ", ")
+        priceLabel.text = String(book.price)
+        
+    }
+    
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")

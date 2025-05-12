@@ -3,16 +3,16 @@ import SnapKit
 
 // MARK: - 책 검색 화면
 final class MainViewController: UIViewController {
-    
+     
     private let searchBar: UISearchBar = {
         let search = UISearchBar()
         search.searchTextField.attributedPlaceholder = NSAttributedString(
             string: "검색어를 입력주세요.",
             attributes: [NSAttributedString.Key.foregroundColor: UIColor.darkGray]
         )
+        search.searchTextField.textColor = .black
         search.barStyle = .default
         search.showsCancelButton = true
-        search.backgroundImage = UIImage()
         return search
     }()
     
@@ -23,12 +23,14 @@ final class MainViewController: UIViewController {
         return collectionView
     }()
     
-    
+    private var searchResults: [BookDocument] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupUI()
+        searchBar.delegate = self
+        navigationController?.navigationBar.isHidden = true
     }
     
     private func setupUI() {
@@ -55,8 +57,41 @@ final class MainViewController: UIViewController {
         }
     }
     
+}
+// MARK: - Network
+extension MainViewController {
+    private func fetchBooks(query: String) {
+        let api = KakaoBookAPI.search(query: query)
+        NetworkManager.shared.request(api: api) { [weak self] (result: Result<BookSearchResponse, Error>) in
+            switch result {
+            case .success(let response):
+                self?.searchResults = response.documents
+                DispatchQueue.main.async {
+                    self?.collectionView.reloadSections(IndexSet(integer: Section.searchResult.rawValue))
+                }
+            case .failure(let error):
+                print("검색 실패: \(error.localizedDescription)")
+            }
+        }
+    }
     
 }
+
+extension MainViewController: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        guard let query = searchBar.text, !query.isEmpty else { return }
+        fetchBooks(query: query)
+        searchBar.resignFirstResponder()
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = ""
+        searchResults = []
+        collectionView.reloadSections(IndexSet(integer: Section.searchResult.rawValue))
+        searchBar.resignFirstResponder()
+    }
+}
+
 
 extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -68,7 +103,7 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
         case .recentBook:
             return 5
         case .searchResult:
-            return 10
+            return searchResults.count
         default:
             return 0
         }
@@ -92,7 +127,8 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
             ) as? SearchResultsCell else {
                 fatalError("SearchResultsCell Fail")
             }
-            
+            let book = searchResults[indexPath.item]
+            cell.configure(with: book)
             return cell
         default:
             fatalError("ERROR")

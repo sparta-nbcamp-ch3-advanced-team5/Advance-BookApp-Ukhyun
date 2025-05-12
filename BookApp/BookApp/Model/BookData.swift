@@ -9,4 +9,5 @@ struct BookDocument: Codable {
     let authors: [String]
     let contents: String
     let thumbnail: String?
+    let price: Int
 }
