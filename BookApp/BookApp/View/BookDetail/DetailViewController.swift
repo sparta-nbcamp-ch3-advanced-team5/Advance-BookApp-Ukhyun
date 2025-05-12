@@ -1,14 +1,22 @@
 import UIKit
 import SnapKit
+import Kingfisher
+
+protocol DetailViewControllerDelegate: AnyObject {
+    func detailViewController(_ viewController: DetailViewController, didAddBook book: BookDocument)
+}
 
 final class DetailViewController: UIViewController {
 
+    weak var delegate: DetailViewControllerDelegate?
+    
+    private var book: BookDocument?
+    
     private let titleLabel: UILabel = {
         let title  = UILabel()
         title.font = .boldSystemFont(ofSize: 24)
         title.textAlignment = .center
         title.textColor = .black
-        title.text = "@@@@@@@@@"
         return title
     }()
     
@@ -17,14 +25,12 @@ final class DetailViewController: UIViewController {
         author.font = .boldSystemFont(ofSize: 12)
         author.textColor = .lightGray
         author.textAlignment = .center
-        author.text = "@@@@@@@@"
         return author
     }()
     
     private let bookImage: UIImageView = {
         let img = UIImageView()
         img.contentMode = .scaleAspectFill
-        img.image = UIImage(systemName: "house")
         return img
     }()
     
@@ -33,7 +39,6 @@ final class DetailViewController: UIViewController {
         price.font = .systemFont(ofSize: 18)
         price.textAlignment = .center
         price.textColor = .black
-        price.text = "@@@@@@@"
         return price
     }()
     
@@ -42,7 +47,6 @@ final class DetailViewController: UIViewController {
         plot.numberOfLines = 0
         plot.font = .systemFont(ofSize: 12)
         plot.textColor = .black
-        plot.text = "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
         return plot
     }()
     
@@ -118,6 +122,20 @@ final class DetailViewController: UIViewController {
         }
     }
     
+    func configure(with book: BookDocument) {
+        self.book = book
+        titleLabel.text = book.title
+        authorLabel.text = book.authors.joined(separator: ", ")
+        priceLabel.text = "\(book.price)원"
+        plotLabel.text = book.contents
+        
+        if let urlString = book.thumbnail, let url = URL(string: urlString) {
+            bookImage.kf.setImage(with: url, placeholder: UIImage(systemName: "book"))
+        } else {
+            bookImage.image = UIImage(systemName: "book")
+        }
+    }
+    
     @objc
     private func cancelButtonClicked() {
         dismiss(animated: true)
@@ -125,6 +143,8 @@ final class DetailViewController: UIViewController {
     
     @objc
     private func addButtonClicked() {
-        
+        guard let book = self.book else { return }
+        delegate?.detailViewController(self, didAddBook: book)
+        dismiss(animated: true)
     }
 }

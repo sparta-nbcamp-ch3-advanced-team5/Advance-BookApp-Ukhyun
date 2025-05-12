@@ -25,6 +25,8 @@ final class MainViewController: UIViewController {
     
     private var searchResults: [BookDocument] = []
     
+    private var recentBooks: [BookDocument] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -66,15 +68,27 @@ extension MainViewController {
             switch result {
             case .success(let response):
                 self?.searchResults = response.documents
+                if let firstBook = response.documents.first {
+                    self?.addRecentBook(firstBook)
+                }
                 DispatchQueue.main.async {
-                    self?.collectionView.reloadSections(IndexSet(integer: Section.searchResult.rawValue))
+                    self?.collectionView.reloadData()
                 }
             case .failure(let error):
                 print("검색 실패: \(error.localizedDescription)")
             }
         }
     }
-    
+}
+
+extension MainViewController {
+    private func addRecentBook(_ book: BookDocument) {
+        if let existingIndex = recentBooks.firstIndex(where: { $0.title == book.title }) {
+            recentBooks.remove(at: existingIndex)
+        }
+        recentBooks.insert(book, at: 0)
+    }
+
 }
 
 extension MainViewController: UISearchBarDelegate {
@@ -101,7 +115,7 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         switch Section(rawValue: section) {
         case .recentBook:
-            return 5
+            return recentBooks.count
         case .searchResult:
             return searchResults.count
         default:
@@ -118,7 +132,8 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
             ) as? RecentBooksCell else {
                 fatalError("RecentBooksCell Fail")
             }
-            
+            let book = recentBooks[indexPath.item]
+            cell.configure(with: book)
             return cell
         case .searchResult:
             guard let cell = collectionView.dequeueReusableCell(
@@ -157,11 +172,28 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard Section(rawValue: indexPath.section) == .searchResult else { return }
+        guard let section = Section(rawValue: indexPath.section) else { return }
         
         let detailVC = DetailViewController()
         detailVC.modalPresentationStyle = .pageSheet
-        present(detailVC, animated: true)
+        
+        if let tabBarController = self.tabBarController,
+           let navController = tabBarController.viewControllers?[1] as? UINavigationController,
+           let bookListVC = navController.viewControllers.first as? BookListViewController {
+            detailVC.delegate = bookListVC
+        }
+        
+        switch section {
+        case .recentBook:
+            let book = recentBooks[indexPath.item]
+            detailVC.configure(with: book)
+            present(detailVC, animated: true)
+        case .searchResult:
+            let book = searchResults[indexPath.item]
+            detailVC.configure(with: book)
+            present(detailVC, animated: true)
+        }
+        
     }
     
     private func setupCollectionView() {

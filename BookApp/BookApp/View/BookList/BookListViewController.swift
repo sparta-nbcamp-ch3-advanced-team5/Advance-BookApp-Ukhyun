@@ -38,6 +38,8 @@ final class BookListViewController: UIViewController {
         return collectionView
     }()
     
+    private var bookList: [BookDocument] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -79,12 +81,25 @@ final class BookListViewController: UIViewController {
             make.bottom.equalTo(view.safeAreaLayoutGuide)
         }
     }
+    
+    func configure(with book: [BookDocument]) {
+        self.bookList.append(contentsOf: book)
+        if isViewLoaded {
+            collectionView.reloadData()
+        }
+    }
 
+}
+extension BookListViewController: DetailViewControllerDelegate {
+    func detailViewController(_ viewController: DetailViewController, didAddBook book: BookDocument) {
+        self.bookList.append(book)
+        collectionView.reloadData()
+    }
 }
 
 extension BookListViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 3
+        return bookList.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -94,6 +109,8 @@ extension BookListViewController: UICollectionViewDelegate, UICollectionViewData
         ) as? BookListCell else {
             fatalError("BookListCell Fail")
         }
+        let book = bookList[indexPath.item]
+        cell.configure(with: book)
         return cell
     }
 
