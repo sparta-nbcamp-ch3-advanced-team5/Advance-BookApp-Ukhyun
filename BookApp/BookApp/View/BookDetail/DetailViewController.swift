@@ -120,7 +120,7 @@ final class DetailViewController: UIViewController {
     
     @objc
     private func cancelButtonClicked() {
-        
+        dismiss(animated: true)
     }
     
     @objc

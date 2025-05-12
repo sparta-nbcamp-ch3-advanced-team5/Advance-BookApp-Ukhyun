@@ -58,7 +58,6 @@ final class MainViewController: UIViewController {
     
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////// // TODO: - 검색 결과 cell -> modal방식으로 책 상세 화면
 extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return Section.allCases.count
@@ -118,7 +117,7 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
             }
             return header
         }
-        fatalError()
+        fatalError("ERROR")
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
