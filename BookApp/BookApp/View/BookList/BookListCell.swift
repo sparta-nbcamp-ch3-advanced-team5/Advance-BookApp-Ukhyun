@@ -1,12 +1,12 @@
 import UIKit
 import SnapKit
 
-final class SearchResultsCell: UICollectionViewCell {
-    static let id = "SearchResultsCell"
+class BookListCell: UICollectionViewCell {
+    static let id = "BookListCell"
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        contentView.backgroundColor = .brown
+        contentView.backgroundColor = .green
     }
 
     @available(*, unavailable)

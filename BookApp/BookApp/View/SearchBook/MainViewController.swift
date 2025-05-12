@@ -3,7 +3,7 @@ import SnapKit
 
 // MARK: - 책 검색 화면
 final class MainViewController: UIViewController {
-
+    
     private let searchBar: UISearchBar = {
         let search = UISearchBar()
         search.searchTextField.attributedPlaceholder = NSAttributedString(
@@ -15,7 +15,7 @@ final class MainViewController: UIViewController {
         search.backgroundImage = UIImage()
         return search
     }()
-
+    
     private lazy var collectionView: UICollectionView = {
         let layout = MainViewCompositionalLayout.create()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -54,10 +54,11 @@ final class MainViewController: UIViewController {
             make.bottom.equalTo(view.safeAreaLayoutGuide)
         }
     }
-
-
+    
+    
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////// // TODO: - 검색 결과 cell -> modal방식으로 책 상세 화면
 extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return Section.allCases.count
@@ -73,7 +74,7 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
             return 0
         }
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         switch Section(rawValue: indexPath.section) {
         case .recentBook:
@@ -113,13 +114,21 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
             case .searchResult:
                 header.titleLabel.text = "검색 결과"
             default:
-                header.titleLabel.text = "@@@@@@@@@@@"
+                header.titleLabel.text = ""
             }
             return header
         }
         fatalError()
     }
-
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard Section(rawValue: indexPath.section) == .searchResult else { return }
+        
+        let detailVC = DetailViewController()
+        detailVC.modalPresentationStyle = .pageSheet
+        present(detailVC, animated: true)
+    }
+    
     private func setupCollectionView() {
         collectionView.register(RecentBooksCell.self, forCellWithReuseIdentifier: RecentBooksCell.id)
         collectionView.register(SearchResultsCell.self, forCellWithReuseIdentifier: SearchResultsCell.id)
