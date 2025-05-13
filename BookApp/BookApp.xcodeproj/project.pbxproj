@@ -13,10 +13,14 @@
 		A50FBFCC2DCE21C300FA6241 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = A50FBFCB2DCE21C300FA6241 /* SnapKit */; };
 		A50FC0322DD2071500FA6241 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = A50FC0312DD2071500FA6241 /* Alamofire */; };
 		A50FC0652DD20A7400FA6241 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = A50FC0642DD20A7400FA6241 /* Kingfisher */; };
+		A55F2B2C2DD3075600E21BAF /* BookListEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55F2B2B2DD3075600E21BAF /* BookListEntity+CoreDataProperties.swift */; };
+		A55F2B2D2DD3075600E21BAF /* BookListEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55F2B2A2DD3075600E21BAF /* BookListEntity+CoreDataClass.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		A50FBFA02DCE1F0900FA6241 /* BookApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BookApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A55F2B2A2DD3075600E21BAF /* BookListEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "BookListEntity+CoreDataClass.swift"; path = "BookApp/CoreData/BookListEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		A55F2B2B2DD3075600E21BAF /* BookListEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "BookListEntity+CoreDataProperties.swift"; path = "BookApp/CoreData/BookListEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -60,6 +64,8 @@
 		A50FBF972DCE1F0900FA6241 = {
 			isa = PBXGroup;
 			children = (
+				A55F2B2A2DD3075600E21BAF /* BookListEntity+CoreDataClass.swift */,
+				A55F2B2B2DD3075600E21BAF /* BookListEntity+CoreDataProperties.swift */,
 				A50FBFA22DCE1F0900FA6241 /* BookApp */,
 				A50FBFA12DCE1F0900FA6241 /* Products */,
 			);
@@ -159,6 +165,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A55F2B2C2DD3075600E21BAF /* BookListEntity+CoreDataProperties.swift in Sources */,
+				A55F2B2D2DD3075600E21BAF /* BookListEntity+CoreDataClass.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
