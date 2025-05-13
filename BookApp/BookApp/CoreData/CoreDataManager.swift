@@ -14,7 +14,7 @@ final class CoreDataManager {
     private init() {}
     
     lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: "BookListEntity")
+        let container = NSPersistentContainer(name: "BookApp")
         container.loadPersistentStores { storeDescription, error in
             if let error = error as NSError? {
                 fatalError("Core Data 로드 실패: \(error), \(error.userInfo)")

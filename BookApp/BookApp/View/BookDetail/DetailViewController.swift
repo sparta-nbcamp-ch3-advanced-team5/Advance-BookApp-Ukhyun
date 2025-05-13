@@ -144,6 +144,16 @@ final class DetailViewController: UIViewController {
     @objc
     private func addButtonClicked() {
         guard let book = self.book else { return }
+        
+        if let saveBook = CoreDataManager.shared.saveBook(
+            title: book.title,
+            author: book.authors.joined(separator: ", "),
+            price: String(book.price)
+        ) {
+            print("addButton: 책 저장 성공")
+        } else {
+            print("addButton: 책 저장 실패")
+        }
         delegate?.detailViewController(self, didAddBook: book)
         dismiss(animated: true)
     }

@@ -4,11 +4,11 @@ import SnapKit
 // MARK: - 담은 책 리스트 화면
 final class BookListViewController: UIViewController {
     
-    private let delelteAllButton: UIButton = {
+    private lazy var deleteAllButton: UIButton = {
         let delete = UIButton()
         delete.setTitle("전체 삭제", for: .normal)
         delete.setTitleColor(.black, for: .normal)
-        delete.backgroundColor = .yellow
+        delete.addTarget(self, action: #selector(deleteAllButtonClciekd), for: .touchUpInside)
         return delete
     }()
     
@@ -17,7 +17,6 @@ final class BookListViewController: UIViewController {
         title.text = "담은 책"
         title.font = .boldSystemFont(ofSize: 24)
         title.textColor = .black
-        title.backgroundColor = .yellow
         return title
     }()
     
@@ -25,7 +24,6 @@ final class BookListViewController: UIViewController {
         let add = UIButton()
         add.setTitle("추가", for: .normal)
         add.setTitleColor(.black, for: .normal)
-        add.backgroundColor = .yellow
         return add
     }()
     
@@ -46,6 +44,12 @@ final class BookListViewController: UIViewController {
         setupUI()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        loadBooks()
+    }
+    
     private func setupUI() {
         view.backgroundColor = .white
         viewHierarchy()
@@ -54,11 +58,11 @@ final class BookListViewController: UIViewController {
     }
     
     private func viewHierarchy() {
-        [delelteAllButton, titleLabel, addButton, collectionView].forEach { view.addSubview($0) }
+        [deleteAllButton, titleLabel, addButton, collectionView].forEach { view.addSubview($0) }
     }
     
     private func viewLayout() {
-        delelteAllButton.snp.makeConstraints { make in
+        deleteAllButton.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(60)
             make.leading.equalToSuperview().offset(12)
             make.width.equalTo(80)
@@ -90,10 +94,39 @@ final class BookListViewController: UIViewController {
     }
 
 }
+extension BookListViewController {
+    @objc
+    private func deleteAllButtonClciekd() {
+        
+    }
+    
+    // MARK: - CoreData
+    private func loadBooks() {
+        let savedBooks = CoreDataManager.shared.fetchAllBooks()
+        
+        let bookDocuments = savedBooks.compactMap { entity -> BookDocument? in
+            guard let title = entity.title,
+                  let author = entity.author,
+                  let priceString = entity.price,
+                  let price = Int(priceString) else {
+                return nil
+            }
+            return BookDocument(
+                title: title,
+                authors: [author],
+                contents: "",
+                thumbnail: nil,
+                price: price
+            )
+        }
+        self.bookList = bookDocuments
+        collectionView.reloadData()
+    }
+}
+
 extension BookListViewController: DetailViewControllerDelegate {
     func detailViewController(_ viewController: DetailViewController, didAddBook book: BookDocument) {
-        self.bookList.append(book)
-        collectionView.reloadData()
+        loadBooks()
     }
 }
 
