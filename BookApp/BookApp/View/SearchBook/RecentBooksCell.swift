@@ -17,7 +17,6 @@ final class RecentBooksCell: UICollectionViewCell {
     }
     
     private func setupUI() {
-        contentView.backgroundColor = .green
         viewHierarchy()
         viewLayout()
     }
