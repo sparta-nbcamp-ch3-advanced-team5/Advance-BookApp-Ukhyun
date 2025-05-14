@@ -9,7 +9,6 @@ final class SearchResultsCell: UICollectionViewCell {
         title.font = .systemFont(ofSize: 18)
         title.numberOfLines = 0
         title.textAlignment = .center
-        title.text = "@@@@@@@@@"
         return title
     }()
     
@@ -19,7 +18,6 @@ final class SearchResultsCell: UICollectionViewCell {
         author.numberOfLines = 0
         author.textColor = .lightGray
         author.textAlignment = .center
-        author.text = "@@@@@@@@@"
         return author
     }()
     
@@ -28,7 +26,6 @@ final class SearchResultsCell: UICollectionViewCell {
         price.font = .systemFont(ofSize: 14)
         price.numberOfLines = 0
         price.textAlignment = .center
-        price.text = "@@@@@@@@@"
         return price
     }()
     
@@ -38,7 +35,6 @@ final class SearchResultsCell: UICollectionViewCell {
     }
 
     private func setupUI() {
-        contentView.backgroundColor = .brown
         viewHierarchy()
         viewLayout()
     }

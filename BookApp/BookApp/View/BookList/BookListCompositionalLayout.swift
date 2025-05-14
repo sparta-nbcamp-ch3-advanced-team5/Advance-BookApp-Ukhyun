@@ -24,4 +24,3 @@ struct BookListCompositionalLayout {
         return section
     }
 }
-

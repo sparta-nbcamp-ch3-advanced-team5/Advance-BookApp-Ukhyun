@@ -39,6 +39,8 @@ final class CoreDataManager {
         }
     }
     // MARK: - CRUD - Create, Read만 구현
+    
+    // 저장 - Create
     func saveBook(title: String, author: String, price: String) -> BookListEntity? {
         let context = mainContext
         
@@ -62,6 +64,7 @@ final class CoreDataManager {
         }
     }
     
+    // 모든 책 조회 - Read
     func fetchAllBooks() -> [BookListEntity] {
         let request: NSFetchRequest<BookListEntity> = BookListEntity.fetchRequest()
         
@@ -73,6 +76,7 @@ final class CoreDataManager {
         }
     }
     
+    // 특정 책 조회 - Read
     func fetchBook(title: String, author: String) -> BookListEntity? {
         let request: NSFetchRequest<BookListEntity> = BookListEntity.fetchRequest()
         request.predicate = NSPredicate(format: "title == %@ AND author == %@", title, author)
@@ -87,5 +91,5 @@ final class CoreDataManager {
         }
     }
     
-    
+    //  TODO: - Delete 구현
 }

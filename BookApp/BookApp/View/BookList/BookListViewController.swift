@@ -1,6 +1,8 @@
 import UIKit
 import SnapKit
 
+// RxDataSource - Step
+
 // MARK: - 담은 책 리스트 화면
 final class BookListViewController: UIViewController {
     
@@ -42,12 +44,13 @@ final class BookListViewController: UIViewController {
         super.viewDidLoad()
         
         setupUI()
+        loadBooks()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        loadBooks()
+//        loadBooks()
     }
     
     private func setupUI() {
