@@ -6,8 +6,11 @@ final class RecentBooksCell: UICollectionViewCell {
     
     private let bookTitleLabel: UILabel = {
         let title = UILabel()
-        title.font = .systemFont(ofSize: 12)
-        title.textAlignment = .center
+        title.font = .systemFont(ofSize: 17, weight: .medium)
+        title.numberOfLines = 1
+        title.textAlignment = .left
+        title.lineBreakMode = .byTruncatingTail
+        title.textColor = .label
         return title
     }()
     
@@ -19,6 +22,10 @@ final class RecentBooksCell: UICollectionViewCell {
     private func setupUI() {
         viewHierarchy()
         viewLayout()
+        
+        contentView.layer.borderWidth = 1
+        contentView.layer.borderColor = UIColor.lightGray.cgColor
+        contentView.layer.cornerRadius = 8
     }
     
     private func viewHierarchy() {
@@ -27,7 +34,9 @@ final class RecentBooksCell: UICollectionViewCell {
     
     private func viewLayout() {
         bookTitleLabel.snp.makeConstraints { make in
-            make.center.equalToSuperview()
+            make.centerY.equalToSuperview()
+            make.leading.equalToSuperview().offset(8)
+            make.trailing.equalToSuperview().inset(8)
         }
     }
     

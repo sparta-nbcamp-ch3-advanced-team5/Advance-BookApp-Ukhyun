@@ -7,7 +7,7 @@ protocol MainViewModelProtocol: AnyObject {
     associatedtype Output
     func transform(with: Input) -> Output
 }
-
+ 
 class MainViewModel: MainViewModelProtocol {
 
     private let disposeBag = DisposeBag()
@@ -27,7 +27,7 @@ class MainViewModel: MainViewModelProtocol {
         let error: Driver<Error>
         let selectedBook: Driver<(BookDocument, IndexPath)?>
     }
-
+    
     func transform(with input: Input) -> Output {
         // 검색어 입력 처리
         input.searchQuery
@@ -35,8 +35,8 @@ class MainViewModel: MainViewModelProtocol {
             .flatMapLatest { [weak self] query -> Observable<[BookDocument]> in
                 guard let self = self else { return .empty() }
                 return self.fetchBooks(query: query)
-                    .catch { error in
-                        self.errorRelay.accept(error)
+                    .catch { [weak self] error in
+                        self?.errorRelay.accept(error)
                         return .just([])
                     }
             }
@@ -51,11 +51,13 @@ class MainViewModel: MainViewModelProtocol {
             .disposed(by: disposeBag)
 
         // 셀 선택 처리
+        let combinedData = Observable.combineLatest(
+            searchResultsRelay.asObservable(),
+            recentBooksRelay.asObservable()
+        )
+        
         let selectedBookDriver = input.itemSelected
-            .withLatestFrom(Observable.combineLatest(
-                searchResultsRelay.asObservable(),
-                recentBooksRelay.asObservable()
-            )) { indexPath, data -> (BookDocument, IndexPath)? in
+            .withLatestFrom(combinedData) { indexPath, data -> (BookDocument, IndexPath)? in
                 let (searchResults, recentBooks) = data
                 guard let section = Section(rawValue: indexPath.section) else { return nil }
                 switch section {
@@ -97,6 +99,13 @@ class MainViewModel: MainViewModelProtocol {
             currentBooks.remove(at: existingIndex)
         }
         currentBooks.insert(book, at: 0)
+        
+        // 최근 10개만 유지
+        if currentBooks.count > 10 {
+            currentBooks = Array(currentBooks.prefix(10))
+        }
+        
         recentBooksRelay.accept(currentBooks)
     }
+
 }

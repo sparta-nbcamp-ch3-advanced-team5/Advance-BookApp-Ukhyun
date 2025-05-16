@@ -13,7 +13,7 @@ final class DetailViewController: UIViewController {
     weak var delegate: DetailViewControllerDelegate?
     
     private let detailViewModel = DetailViewModel()
-    private let disposeBag = DisposeBag()
+    private var disposeBag = DisposeBag()
     
     // Rx Subjects
     private let viewDidLoadSubject = PublishSubject<Void>()
@@ -23,9 +23,11 @@ final class DetailViewController: UIViewController {
     // UI Components
     private let titleLabel: UILabel = {
         let title  = UILabel()
-        title.font = .boldSystemFont(ofSize: 24)
-        title.textAlignment = .center
-        title.textColor = .black
+        title.font = .systemFont(ofSize: 17, weight: .medium)
+        title.numberOfLines = 1
+        title.textAlignment = .left
+        title.lineBreakMode = .byTruncatingTail
+        title.textColor = .label
         return title
     }()
     
@@ -53,9 +55,10 @@ final class DetailViewController: UIViewController {
     
     private let plotLabel: UILabel = {
         let plot = UILabel()
+        plot.font = .systemFont(ofSize: 12, weight: .medium)
         plot.numberOfLines = 0
-        plot.font = .systemFont(ofSize: 12)
-        plot.textColor = .black
+        plot.textAlignment = .left
+        plot.textColor = .label
         return plot
     }()
     
@@ -81,6 +84,7 @@ final class DetailViewController: UIViewController {
         detailViewModel.setBook(book)
     }
     
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -92,6 +96,11 @@ final class DetailViewController: UIViewController {
         setupUI()
         bindViewModel()
         viewDidLoadSubject.onNext(())
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.disposeBag = DisposeBag()
     }
 
     // MARK: - UI 설정
@@ -128,7 +137,7 @@ final class DetailViewController: UIViewController {
         }
         plotLabel.snp.makeConstraints { make in
             make.top.equalTo(priceLabel.snp.bottom).offset(8)
-            make.directionalHorizontalEdges.equalToSuperview().inset(12)
+            make.directionalHorizontalEdges.equalToSuperview().inset(16)
         }
         cancelButton.snp.makeConstraints { make in
             make.bottom.equalTo(view.safeAreaLayoutGuide)

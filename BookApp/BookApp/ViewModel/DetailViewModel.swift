@@ -15,10 +15,6 @@ class DetailViewModel: DetailViewModelProtocol {
 
     init() {}
     
-    init(book: BookDocument) {
-        self.book = book
-    }
-    
     // book을 설정하는 메서드
     func setBook(_ book: BookDocument) {
         self.book = book

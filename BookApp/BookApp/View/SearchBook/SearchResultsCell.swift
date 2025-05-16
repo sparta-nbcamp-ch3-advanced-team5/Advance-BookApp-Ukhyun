@@ -55,6 +55,10 @@ final class SearchResultsCell: UICollectionViewCell {
     private func setupUI() {
         viewHierarchy()
         viewLayout()
+        
+        contentView.layer.borderWidth = 1
+        contentView.layer.borderColor = UIColor.lightGray.cgColor
+        contentView.layer.cornerRadius = 8
     }
 
     private func viewHierarchy() {

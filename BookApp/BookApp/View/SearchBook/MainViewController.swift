@@ -12,6 +12,7 @@ final class MainViewController: UIViewController {
     // Rx Subjects
     private let searchQuerySubject = PublishSubject<String>()
     private let searchCancelSubject = PublishSubject<Void>()
+    private let selectedItemIndex = PublishSubject<IndexPath>()
 
     // MARK: - UI Components
     private let searchBar: UISearchBar = {
@@ -59,11 +60,12 @@ final class MainViewController: UIViewController {
         let input = MainViewModel.Input(
             searchQuery: searchQuerySubject.asObservable(),
             searchCancelTrigger: searchCancelSubject.asObservable(),
-            itemSelected: collectionView.rx.itemSelected.asObservable()
+            /// 메모리 누수 이슈로 인해 프로퍼티 변경 ->itemSelected: collectionView.rx.itemSelected.asObservable() 
+            itemSelected: selectedItemIndex.asObservable()
         )
 
         let output = mainViewModel.transform(with: input)
-
+        
         // 검색 결과 업데이트
         output.searchResults
             .drive(onNext: { [weak self] _ in
@@ -82,14 +84,10 @@ final class MainViewController: UIViewController {
         output.selectedBook
             .drive(onNext: { [weak self] bookData in
                 guard let self = self, let (book, _) = bookData else { return }
+                self.mainViewModel.addRecentBook(book) // 최근 본 책 추가
                 let detailVC = DetailViewController(book: book)
                 detailVC.modalPresentationStyle = .pageSheet
-                if let tabBarController = self.tabBarController,
-                   let navController = tabBarController.viewControllers?[1] as? UINavigationController,
-                   let bookListVC = navController.viewControllers.first as? BookListViewController {
-                    detailVC.delegate = bookListVC
-                }
-                self.present(detailVC, animated: true)
+                self.present(detailVC, animated: true) // Check
             })
             .disposed(by: disposeBag)
         
@@ -192,7 +190,12 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
             ) as! MainSectionHeaderView
             switch Section(rawValue: indexPath.section) {
             case .recentBook:
-                header.titleLabel.text = "최근 본 책"
+                if mainViewModel.recentBooksRelay.value.isEmpty {
+                    header.isHidden = true
+                } else {
+                    header.isHidden = false
+                    header.titleLabel.text = "최근 본 책"
+                }
             case .searchResult:
                 header.titleLabel.text = "검색 결과"
             default:
@@ -202,30 +205,9 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
         }
         fatalError("ERROR")
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard let section = Section(rawValue: indexPath.section) else { return }
-        
-        var selectedBook: BookDocument
-        
-        switch section {
-        case .recentBook:
-            selectedBook = mainViewModel.recentBooksRelay.value[indexPath.item]
-        case .searchResult:
-            selectedBook = mainViewModel.searchResultsRelay.value[indexPath.item]
-            mainViewModel.addRecentBook(selectedBook)
-        }
-        
-        let detailVC = DetailViewController(book: selectedBook)
-        detailVC.modalPresentationStyle = .pageSheet
-        
-        if let tabBarController = self.tabBarController,
-           let navController = tabBarController.viewControllers?[1] as? UINavigationController,
-           let bookListVC = navController.viewControllers.first as? BookListViewController {
-            detailVC.delegate = bookListVC
-        }
-        
-        present(detailVC, animated: true)
+        self.selectedItemIndex.onNext(indexPath)
     }
 
     private func setupCollectionView() {
