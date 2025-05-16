@@ -1,11 +1,12 @@
 import Foundation
 import Alamofire
+import RxSwift
 
 enum KakaoBookAPI {
     case search(query: String, page: Int = 1, size: Int = 10, sort: String = "accuracy")
-    
+
     var baseURL: String { "https://dapi.kakao.com/v3/search/" }
-    
+
     var endPoint: URL {
         let path: String
         switch self {
@@ -14,14 +15,14 @@ enum KakaoBookAPI {
         }
         return URL(string: baseURL + path)!
     }
-    
+
     var method: HTTPMethod {
         switch self {
         case .search:
             return .get
         }
     }
-    
+
     var parameters: Parameters {
         switch self {
         case .search(let query, let page, let size, let sort):
@@ -33,7 +34,7 @@ enum KakaoBookAPI {
             ]
         }
     }
-    
+
     var headers: HTTPHeaders {
         return ["Authorization": "KakaoAK \(APIKey.Key)"]
     }
@@ -42,30 +43,33 @@ enum KakaoBookAPI {
 final class NetworkManager {
     static let shared = NetworkManager()
     private init() {}
-    
-    func request<T: Decodable>(
-        api: KakaoBookAPI,
-        completion: @escaping (Result<T, Error>) -> Void
-    ) {
-        AF.request(
-            api.endPoint,
-            method: api.method,
-            parameters: api.parameters,
-            headers: api.headers
-        )
-        .validate()
-        .responseDecodable(of: T.self) { response in
-            switch response.result {
-            case .success(let data):
-                completion(.success(data))
-            case .failure(let error):
-                let statusCode = response.response?.statusCode ?? -1
-                let errorMessage = self.handleError(error: error, statusCode: statusCode)
-                completion(.failure(errorMessage))
+
+    func callRequest<T: Decodable>(api: KakaoBookAPI) -> Observable<T> {
+        return Observable.create { observer in
+            let request = AF.request(
+                api.endPoint,
+                method: api.method,
+                parameters: api.parameters,
+                headers: api.headers
+            )
+            .validate()
+            .responseDecodable(of: T.self) { response in
+                switch response.result {
+                case .success(let data):
+                    observer.onNext(data)
+                    observer.onCompleted()
+                case .failure(let error):
+                    let statusCode = response.response?.statusCode ?? -1
+                    let errorMessage = self.handleError(error: error, statusCode: statusCode)
+                    observer.onError(errorMessage)
+                }
+            }
+            return Disposables.create {
+                request.cancel()
             }
         }
     }
-    
+
     private func handleError(error: AFError, statusCode: Int) -> Error {
         switch statusCode {
         case 400: return NSError(domain: "Bad Request", code: 400)
@@ -76,4 +80,3 @@ final class NetworkManager {
         }
     }
 }
-

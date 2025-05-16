@@ -1,10 +1,3 @@
-//
-//  CoreDataManager.swift
-//  BookApp
-//
-//  Created by GO on 5/13/25.
-//
-
 import Foundation
 import CoreData
 
@@ -92,4 +85,20 @@ final class CoreDataManager {
     }
     
     //  TODO: - Delete 구현
+    // 모든 책 삭제 - Delete All
+    func deleteAllBooks() -> Bool {
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = BookListEntity.fetchRequest()
+        let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        
+        do {
+            try mainContext.execute(batchDeleteRequest)
+            // 메인 컨텍스트 상태 동기화
+            mainContext.reset()
+            return true
+        } catch {
+            print("모든 책 삭제 실패: \(error)")
+            return false
+        }
+    }
+
 }

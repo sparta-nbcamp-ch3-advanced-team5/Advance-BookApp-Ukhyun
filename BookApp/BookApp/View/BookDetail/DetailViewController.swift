@@ -1,6 +1,8 @@
 import UIKit
 import SnapKit
 import Kingfisher
+import RxSwift
+import RxCocoa
 
 protocol DetailViewControllerDelegate: AnyObject {
     func detailViewController(_ viewController: DetailViewController, didAddBook book: BookDocument)
@@ -10,13 +12,22 @@ final class DetailViewController: UIViewController {
 
     weak var delegate: DetailViewControllerDelegate?
     
-    private var book: BookDocument?
+    private let detailViewModel = DetailViewModel()
+    private var disposeBag = DisposeBag()
     
+    // Rx Subjects
+    private let viewDidLoadSubject = PublishSubject<Void>()
+    private let addButtonTapSubject = PublishSubject<Void>()
+    private let cancelButtonTapSubject = PublishSubject<Void>()
+    
+    // UI Components
     private let titleLabel: UILabel = {
         let title  = UILabel()
-        title.font = .boldSystemFont(ofSize: 24)
-        title.textAlignment = .center
-        title.textColor = .black
+        title.font = .systemFont(ofSize: 17, weight: .medium)
+        title.numberOfLines = 1
+        title.textAlignment = .left
+        title.lineBreakMode = .byTruncatingTail
+        title.textColor = .label
         return title
     }()
     
@@ -44,9 +55,10 @@ final class DetailViewController: UIViewController {
     
     private let plotLabel: UILabel = {
         let plot = UILabel()
+        plot.font = .systemFont(ofSize: 12, weight: .medium)
         plot.numberOfLines = 0
-        plot.font = .systemFont(ofSize: 12)
-        plot.textColor = .black
+        plot.textAlignment = .left
+        plot.textColor = .label
         return plot
     }()
     
@@ -55,7 +67,6 @@ final class DetailViewController: UIViewController {
         cancel.setImage(UIImage(systemName: "xmark"), for: .normal)
         cancel.tintColor = .white
         cancel.backgroundColor = .lightGray
-        cancel.addTarget(self, action: #selector(cancelButtonClicked), for: .touchUpInside)
         return cancel
     }()
     
@@ -64,16 +75,35 @@ final class DetailViewController: UIViewController {
         add.setTitle("담기", for: .normal)
         add.tintColor = .white
         add.backgroundColor = .green
-        add.addTarget(self, action: #selector(addButtonClicked), for: .touchUpInside)
         return add
     }()
     
+    // MARK: - 초기화
+    init(book: BookDocument) {
+        super.init(nibName: nil, bundle: nil)
+        detailViewModel.setBook(book)
+    }
+    
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    // MARK: - 생명주기
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupUI()
+        bindViewModel()
+        viewDidLoadSubject.onNext(())
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.disposeBag = DisposeBag()
     }
 
+    // MARK: - UI 설정
     private func setupUI() {
         view.backgroundColor = .white
         viewHierarchy()
@@ -107,7 +137,7 @@ final class DetailViewController: UIViewController {
         }
         plotLabel.snp.makeConstraints { make in
             make.top.equalTo(priceLabel.snp.bottom).offset(8)
-            make.directionalHorizontalEdges.equalToSuperview().inset(12)
+            make.directionalHorizontalEdges.equalToSuperview().inset(16)
         }
         cancelButton.snp.makeConstraints { make in
             make.bottom.equalTo(view.safeAreaLayoutGuide)
@@ -122,39 +152,64 @@ final class DetailViewController: UIViewController {
         }
     }
     
-    func configure(with book: BookDocument) {
-        self.book = book
-        titleLabel.text = book.title
-        authorLabel.text = book.authors.joined(separator: ", ")
-        priceLabel.text = "\(book.price)원"
-        plotLabel.text = book.contents
+    // MARK: - ViewModel 바인딩
+    private func bindViewModel() {
+        // Input 바인딩
+        let input = DetailViewModel.Input(
+            viewDidLoad: viewDidLoadSubject,
+            addButtonTap: addButtonTapSubject,
+            cancelButtonTap: cancelButtonTapSubject
+        )
         
-        if let urlString = book.thumbnail, let url = URL(string: urlString) {
-            bookImage.kf.setImage(with: url, placeholder: UIImage(systemName: "book"))
-        } else {
-            bookImage.image = UIImage(systemName: "book")
-        }
-    }
-    
-    @objc
-    private func cancelButtonClicked() {
-        dismiss(animated: true)
-    }
-    
-    @objc
-    private func addButtonClicked() {
-        guard let book = self.book else { return }
+        // 버튼 액션 바인딩
+        cancelButton.rx.tap
+            .bind(to: cancelButtonTapSubject)
+            .disposed(by: disposeBag)
         
-        if let saveBook = CoreDataManager.shared.saveBook(
-            title: book.title,
-            author: book.authors.joined(separator: ", "),
-            price: String(book.price)
-        ) {
-            print("addButton: 책 저장 성공")
-        } else {
-            print("addButton: 책 저장 실패")
-        }
-        delegate?.detailViewController(self, didAddBook: book)
-        dismiss(animated: true)
+        addButton.rx.tap
+            .bind(to: addButtonTapSubject)
+            .disposed(by: disposeBag)
+        
+        // Output 바인딩
+        let output = detailViewModel.transform(with: input)
+        
+        output.titleText
+            .drive(titleLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        output.authorText
+            .drive(authorLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        output.priceText
+            .drive(priceLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        output.plotText
+            .drive(plotLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        output.imageURL
+            .drive(onNext: { [weak self] url in
+                if let url = url {
+                    self?.bookImage.kf.setImage(with: url, placeholder: UIImage(systemName: "book"))
+                } else {
+                    self?.bookImage.image = UIImage(systemName: "book")
+                }
+            })
+            .disposed(by: disposeBag)
+        
+        output.saveResult
+            .drive(onNext: { [weak self] success in
+                guard let self = self, success, let book = self.detailViewModel.getBook() else { return }
+                self.delegate?.detailViewController(self, didAddBook: book)
+            })
+            .disposed(by: disposeBag)
+        
+        output.dismiss
+            .drive(onNext: { [weak self] _ in
+                self?.dismiss(animated: true)
+            })
+            .disposed(by: disposeBag)
     }
 }
