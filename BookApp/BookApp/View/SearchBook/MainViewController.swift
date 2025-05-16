@@ -8,6 +8,8 @@ final class MainViewController: UIViewController {
     // MARK: - Properties
     private let mainViewModel = MainViewModel()
     private let disposeBag = DisposeBag()
+    
+    // Rx Subjects
     private let searchQuerySubject = PublishSubject<String>()
     private let searchCancelSubject = PublishSubject<Void>()
 

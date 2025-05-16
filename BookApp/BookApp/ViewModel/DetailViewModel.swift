@@ -12,18 +12,14 @@ class DetailViewModel: DetailViewModelProtocol {
     
     private let disposeBag = DisposeBag()
     private var book: BookDocument?
+
+    init() {}
     
-    // 기본 생성자 추가
-    init() {
-        // 빈 초기화
-    }
-    
-    // 기존 생성자 유지
     init(book: BookDocument) {
         self.book = book
     }
     
-    // book을 설정하는 메서드 추가
+    // book을 설정하는 메서드
     func setBook(_ book: BookDocument) {
         self.book = book
     }
@@ -76,11 +72,11 @@ class DetailViewModel: DetailViewModelProtocol {
             .subscribe(onNext: { [weak self] in
                 guard let self = self, let book = self.book else { return }
                 
-                if let saveBook = CoreDataManager.shared.saveBook(
+                if CoreDataManager.shared.saveBook(
                     title: book.title,
                     author: book.authors.joined(separator: ", "),
                     price: String(book.price)
-                ) {
+                ) != nil {
                     saveResultSubject.onNext(true)
                     print("ViewModel: 책 저장 성공")
                 } else {
