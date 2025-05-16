@@ -91,7 +91,7 @@ class MainViewModel: MainViewModelProtocol {
     }
 
     // 최근 본 책 추가
-    private func addRecentBook(_ book: BookDocument) {
+    func addRecentBook(_ book: BookDocument) {
         var currentBooks = recentBooksRelay.value
         if let existingIndex = currentBooks.firstIndex(where: { $0.title == book.title }) {
             currentBooks.remove(at: existingIndex)

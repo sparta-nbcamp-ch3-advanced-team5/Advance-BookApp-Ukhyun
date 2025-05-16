@@ -7,7 +7,9 @@ enum Section: Int, CaseIterable {
 
 struct MainViewCompositionalLayout {
     static func create() -> UICollectionViewCompositionalLayout {
-        return UICollectionViewCompositionalLayout { section, _ in
+        return UICollectionViewCompositionalLayout {
+            section,
+            _ in
             switch Section(rawValue: section) {
             case .recentBook:
                 
@@ -19,11 +21,14 @@ struct MainViewCompositionalLayout {
                 let item = NSCollectionLayoutItem(layoutSize: itemSize)
                 
                 let groupSize = NSCollectionLayoutSize(
-                    widthDimension: .fractionalWidth(1.0),
+                    widthDimension: .fractionalWidth(0.3),
                     heightDimension: .absolute(80)
                 )
                 
-                let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
+                let group = NSCollectionLayoutGroup.horizontal(
+                    layoutSize: groupSize,
+                    subitems: [item]
+                )
                 
                 let section = NSCollectionLayoutSection(group: group)
                 

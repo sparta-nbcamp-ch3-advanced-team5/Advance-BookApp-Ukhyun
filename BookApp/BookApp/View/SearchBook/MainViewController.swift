@@ -211,6 +211,7 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
             selectedBook = mainViewModel.recentBooksRelay.value[indexPath.item]
         case .searchResult:
             selectedBook = mainViewModel.searchResultsRelay.value[indexPath.item]
+            mainViewModel.addRecentBook(selectedBook)
         }
         
         let detailVC = DetailViewController(book: selectedBook)
