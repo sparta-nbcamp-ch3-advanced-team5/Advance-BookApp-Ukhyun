@@ -21,7 +21,7 @@ struct MainViewCompositionalLayout {
                 let item = NSCollectionLayoutItem(layoutSize: itemSize)
                 
                 let groupSize = NSCollectionLayoutSize(
-                    widthDimension: .fractionalWidth(0.3),
+                    widthDimension: .fractionalWidth(0.5),
                     heightDimension: .absolute(80)
                 )
                 
