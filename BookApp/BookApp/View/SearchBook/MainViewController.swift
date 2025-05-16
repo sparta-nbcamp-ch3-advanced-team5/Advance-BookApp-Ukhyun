@@ -37,6 +37,20 @@ final class MainViewController: UIViewController {
         setupUI()
         bindViewModel()
         navigationController?.navigationBar.isHidden = true
+        
+        // NotificationCenter 옵저버 등록
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(switchToSearchBar),
+            name: NSNotification.Name("SwitchToSearchBar"),
+            object: nil
+        )
+    }
+    
+    // searchBar로 전환
+    @objc private func switchToSearchBar() {
+        self.tabBarController?.selectedIndex = 0
+        self.searchBar.becomeFirstResponder()
     }
 
     private func bindViewModel() {
@@ -76,7 +90,7 @@ final class MainViewController: UIViewController {
                 self.present(detailVC, animated: true)
             })
             .disposed(by: disposeBag)
-
+        
         output.error
             .drive(onNext: { error in
                 print("검색 실패: \(error.localizedDescription)")
@@ -210,7 +224,6 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
         
         present(detailVC, animated: true)
     }
-
 
     private func setupCollectionView() {
         collectionView.register(RecentBooksCell.self, forCellWithReuseIdentifier: RecentBooksCell.id)

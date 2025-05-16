@@ -21,6 +21,7 @@ final class BookListViewController: UIViewController {
         let delete = UIButton()
         delete.setTitle("전체 삭제", for: .normal)
         delete.setTitleColor(.black, for: .normal)
+        delete.addTarget(self, action: #selector(deleteAllButtonClicked), for: .touchUpInside)  // 수정: addTarget 추가
         return delete
     }()
     
@@ -32,10 +33,11 @@ final class BookListViewController: UIViewController {
         return title
     }()
     
-    private let addButton: UIButton = {
+    private lazy var addButton: UIButton = {
         let add = UIButton()
         add.setTitle("추가", for: .normal)
         add.setTitleColor(.black, for: .normal)
+        add.addTarget(self, action: #selector(addButtonClicked), for: .touchUpInside)
         return add
     }()
     
@@ -48,9 +50,19 @@ final class BookListViewController: UIViewController {
         return collectionView
     }()
     
+    @objc private func deleteAllButtonClicked() {
+        deleteAllButtonTapSubject.onNext(())
+        print("delete all button click")
+    }
+    
+    @objc private func addButtonClicked() {
+        NotificationCenter.default.post(name: NSNotification.Name("SwitchToSearchBar"), object: nil)
+        print("add button click")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        navigationController?.navigationBar.isHidden = true
         setupUI()
         bindViewModel()
     }
@@ -103,11 +115,6 @@ final class BookListViewController: UIViewController {
             deleteAllButtonTap: deleteAllButtonTapSubject.asObservable(),
             addBook: addBookSubject.asObservable()
         )
-        
-        // 버튼 액션 바인딩
-        deleteAllButton.rx.tap
-            .bind(to: deleteAllButtonTapSubject)
-            .disposed(by: disposeBag)
         
         // Output 바인딩
         let output = bookListViewModel.transform(with: input)
