@@ -1,16 +1,26 @@
 import UIKit
 import SnapKit
-
-// RxDataSource - Step
+import RxSwift
+import RxCocoa
 
 // MARK: - 담은 책 리스트 화면
 final class BookListViewController: UIViewController {
+    
+    private let bookListViewModel = BookListViewModel()
+    private let disposeBag = DisposeBag()
+    
+    // Rx Subjects
+    private let viewWillAppearSubject = PublishSubject<Void>()
+    private let deleteAllButtonTapSubject = PublishSubject<Void>()
+    private let addBookSubject = PublishSubject<BookDocument>()
+    
+    // 책 목록 데이터
+    private var books: [BookDocument] = []
     
     private lazy var deleteAllButton: UIButton = {
         let delete = UIButton()
         delete.setTitle("전체 삭제", for: .normal)
         delete.setTitleColor(.black, for: .normal)
-        delete.addTarget(self, action: #selector(deleteAllButtonClciekd), for: .touchUpInside)
         return delete
     }()
     
@@ -38,19 +48,16 @@ final class BookListViewController: UIViewController {
         return collectionView
     }()
     
-    private var bookList: [BookDocument] = []
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupUI()
-        loadBooks()
+        bindViewModel()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
-//        loadBooks()
+        viewWillAppearSubject.onNext(())
     }
     
     private func setupUI() {
@@ -89,53 +96,50 @@ final class BookListViewController: UIViewController {
         }
     }
     
-    func configure(with book: [BookDocument]) {
-        self.bookList.append(contentsOf: book)
-        if isViewLoaded {
-            collectionView.reloadData()
-        }
-    }
-
-}
-extension BookListViewController {
-    @objc
-    private func deleteAllButtonClciekd() {
+    private func bindViewModel() {
+        // Input 바인딩
+        let input = BookListViewModel.Input(
+            viewWillAppear: viewWillAppearSubject.asObservable(),
+            deleteAllButtonTap: deleteAllButtonTapSubject.asObservable(),
+            addBook: addBookSubject.asObservable()
+        )
         
+        // 버튼 액션 바인딩
+        deleteAllButton.rx.tap
+            .bind(to: deleteAllButtonTapSubject)
+            .disposed(by: disposeBag)
+        
+        // Output 바인딩
+        let output = bookListViewModel.transform(with: input)
+        
+        output.books
+            .drive(onNext: { [weak self] books in
+                self?.books = books
+                self?.collectionView.reloadData()
+            })
+            .disposed(by: disposeBag)
+        
+        output.deleteAllResult
+            .drive(onNext: { success in
+                if success {
+                    print("모든 책이 삭제되었습니다.")
+                } else {
+                    print("책 삭제에 실패했습니다.")
+                }
+            })
+            .disposed(by: disposeBag)
     }
     
-    // MARK: - CoreData
-    private func loadBooks() {
-        let savedBooks = CoreDataManager.shared.fetchAllBooks()
-        
-        let bookDocuments = savedBooks.compactMap { entity -> BookDocument? in
-            guard let title = entity.title,
-                  let author = entity.author,
-                  let priceString = entity.price,
-                  let price = Int(priceString) else {
-                return nil
-            }
-            return BookDocument(
-                title: title,
-                authors: [author],
-                contents: "",
-                thumbnail: nil,
-                price: price
-            )
-        }
-        self.bookList = bookDocuments
-        collectionView.reloadData()
-    }
-}
-
-extension BookListViewController: DetailViewControllerDelegate {
-    func detailViewController(_ viewController: DetailViewController, didAddBook book: BookDocument) {
-        loadBooks()
+    private func setupCollectionView() {
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        collectionView.register(BookListCell.self, forCellWithReuseIdentifier: BookListCell.id)
     }
 }
 
 extension BookListViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return bookList.count
+        return books.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -145,15 +149,14 @@ extension BookListViewController: UICollectionViewDelegate, UICollectionViewData
         ) as? BookListCell else {
             fatalError("BookListCell Fail")
         }
-        let book = bookList[indexPath.item]
+        let book = books[indexPath.item]
         cell.configure(with: book)
         return cell
     }
+}
 
-    private func setupCollectionView() {
-        collectionView.delegate = self
-        collectionView.dataSource = self
-        
-        collectionView.register(BookListCell.self, forCellWithReuseIdentifier: BookListCell.id)
+extension BookListViewController: DetailViewControllerDelegate {
+    func detailViewController(_ viewController: DetailViewController, didAddBook book: BookDocument) {
+        addBookSubject.onNext(book)
     }
 }
