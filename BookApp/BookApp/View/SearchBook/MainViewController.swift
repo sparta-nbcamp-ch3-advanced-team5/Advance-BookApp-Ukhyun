@@ -66,14 +66,13 @@ final class MainViewController: UIViewController {
         output.selectedBook
             .drive(onNext: { [weak self] bookData in
                 guard let self = self, let (book, _) = bookData else { return }
-                let detailVC = DetailViewController()
+                let detailVC = DetailViewController(book: book)
                 detailVC.modalPresentationStyle = .pageSheet
                 if let tabBarController = self.tabBarController,
                    let navController = tabBarController.viewControllers?[1] as? UINavigationController,
                    let bookListVC = navController.viewControllers.first as? BookListViewController {
                     detailVC.delegate = bookListVC
                 }
-                detailVC.configure(with: book)
                 self.present(detailVC, animated: true)
             })
             .disposed(by: disposeBag)
@@ -190,24 +189,28 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let section = Section(rawValue: indexPath.section) else { return }
-        let detailVC = DetailViewController()
+        
+        var selectedBook: BookDocument
+        
+        switch section {
+        case .recentBook:
+            selectedBook = mainViewModel.recentBooksRelay.value[indexPath.item]
+        case .searchResult:
+            selectedBook = mainViewModel.searchResultsRelay.value[indexPath.item]
+        }
+        
+        let detailVC = DetailViewController(book: selectedBook)
         detailVC.modalPresentationStyle = .pageSheet
+        
         if let tabBarController = self.tabBarController,
            let navController = tabBarController.viewControllers?[1] as? UINavigationController,
            let bookListVC = navController.viewControllers.first as? BookListViewController {
             detailVC.delegate = bookListVC
         }
-        switch section {
-        case .recentBook:
-            let book = mainViewModel.recentBooksRelay.value[indexPath.item]
-            detailVC.configure(with: book)
-            present(detailVC, animated: true)
-        case .searchResult:
-            let book = mainViewModel.searchResultsRelay.value[indexPath.item]
-            detailVC.configure(with: book)
-            present(detailVC, animated: true)
-        }
+        
+        present(detailVC, animated: true)
     }
+
 
     private func setupCollectionView() {
         collectionView.register(RecentBooksCell.self, forCellWithReuseIdentifier: RecentBooksCell.id)
