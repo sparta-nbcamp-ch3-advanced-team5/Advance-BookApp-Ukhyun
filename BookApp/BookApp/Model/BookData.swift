@@ -2,6 +2,7 @@ import Foundation
 
 struct BookSearchResponse: Codable {
     let documents: [BookDocument]
+    let meta: Meta
 }
 
 struct BookDocument: Codable {
@@ -10,4 +11,10 @@ struct BookDocument: Codable {
     let contents: String
     let thumbnail: String?
     let price: Int
+}
+
+struct Meta: Codable {
+    let total_count: Int
+    let pageable_count: Int
+    let is_end: Bool
 }
