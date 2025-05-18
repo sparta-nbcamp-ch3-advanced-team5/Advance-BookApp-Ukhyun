@@ -74,10 +74,10 @@ class DetailViewModel: DetailViewModelProtocol {
                     price: String(book.price)
                 ) != nil {
                     saveResultSubject.onNext(true)
-                    print("ViewModel: 책 저장 성공")
+                    print("DetailVM: 책 저장 성공")
                 } else {
                     saveResultSubject.onNext(false)
-                    print("ViewModel: 책 저장 실패")
+                    print("DetailVM: 책 저장 실패")
                 }
             })
             .disposed(by: disposeBag)

@@ -52,12 +52,10 @@ final class BookListViewController: UIViewController {
     
     @objc private func deleteAllButtonClicked() {
         deleteAllButtonTapSubject.onNext(())
-        print("delete all button click")
     }
     
     @objc private func addButtonClicked() {
         NotificationCenter.default.post(name: NSNotification.Name("SwitchToSearchBar"), object: nil)
-        print("add button click")
     }
     
     override func viewDidLoad() {
@@ -129,9 +127,9 @@ final class BookListViewController: UIViewController {
         output.deleteAllResult
             .drive(onNext: { success in
                 if success {
-                    print("모든 책이 삭제되었습니다.")
+                    print("모든 책이 삭제")
                 } else {
-                    print("책 삭제에 실패했습니다.")
+                    print("책 삭제 실패")
                 }
             })
             .disposed(by: disposeBag)
