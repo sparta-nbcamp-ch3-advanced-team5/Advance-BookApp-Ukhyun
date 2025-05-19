@@ -19,17 +19,23 @@ https://github.com/user-attachments/assets/954d00d4-3892-4807-b659-717ed0f9c3db
 ### 🎨 라이브러리 구성
 - **UIKit**  
   전통적인 iOS UI 구성 프레임워크
+  
 - **SnapKit**  
   AutoLayout을 코드로 간결하게 작성할 수 있는 DSL 라이브러리
+  
 - **UICollectionView Compositional Layout**  
   복잡한 레이아웃을 손쉽게 구성할 수 있는 컬렉션 뷰 레이아웃 방식
+  
 - **KingFisher**  
   이미지를 URL로 쉽게 다운로드하고 캐싱하는 라이브러리
+  
 - **AlamoFire**  
    HTTP 네트워크 요청을 간단하게 처리하는 라이브러리
+  
 - **RxSwift**  
    비동기 작업과 이벤트 기반 코드를 선언형으로 작성할 수 있게 해주는 리액티브 프로그래밍 라이브러리
-- **RxSwift**
+  
+- **RxCocoa**
    RxSwift 기반으로, UIKit 및 Cocoa 컴포넌트에 리액티브 확장 기능을 제공하는 라이브러리
 
 
